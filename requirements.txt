@@ -1,14 +1,10 @@
-# Core Framework
 fastapi
 uvicorn[standard]
 pydantic
 python-dotenv
-
-# LangChain & Groq
 langchain
 langchain-groq
 groq
-
-# Utilities
 python-multipart
 aiofiles
+langchain-core

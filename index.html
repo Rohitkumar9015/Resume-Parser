@@ -13,68 +13,101 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 30px;
+            color: #718096;
+            margin-bottom: 35px;
+            font-size: 1.1em;
         }
 
         .upload-section {
-            border: 2px dashed #ddd;
-            padding: 40px;
+            border: 3px dashed #cbd5e0;
+            padding: 50px;
             text-align: center;
-            border-radius: 8px;
-            background: #fafafa;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #edf2f7 0%, #e6fffa 100%);
+        }
+
+        .upload-section h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.3em;
         }
 
         input[type="file"] {
             margin: 20px 0;
+            padding: 10px;
+            font-size: 1em;
         }
 
         button {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 35px;
             font-size: 16px;
-            border-radius: 4px;
+            font-weight: 600;
+            border-radius: 10px;
             cursor: pointer;
             margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         button:hover {
-            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         button:disabled {
-            background: #ccc;
+            background: #cbd5e0;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
-            color: #666;
+            padding: 30px;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
         }
 
         .loading.show {
@@ -83,11 +116,13 @@
 
         .error {
             display: none;
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 4px;
+            background: #fff5f5;
+            color: #c53030;
+            padding: 18px;
+            border-radius: 12px;
             margin: 20px 0;
+            border-left: 4px solid #fc8181;
+            font-weight: 500;
         }
 
         .error.show {
@@ -101,44 +136,86 @@
 
         .results.show {
             display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results h2 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
         }
 
         .result-item {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 4px;
+            margin: 25px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 16px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
         }
 
         .result-item h3 {
-            color: #333;
-            margin-bottom: 10px;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .result-item p {
+            color: #4a5568;
+            font-size: 1.05em;
+            line-height: 1.6;
         }
 
         .score {
-            font-size: 48px;
-            font-weight: bold;
-            color: #4CAF50;
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(72, 187, 120, 0.3);
         }
 
         .skills {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .skill {
-            background: #2196F3;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .skill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .skill.missing {
-            background: #f44336;
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+            box-shadow: 0 2px 8px rgba(252, 129, 129, 0.3);
         }
 
         .hidden {
@@ -154,7 +231,7 @@
         <div id="uploadSection">
             <div class="upload-section">
                 <h3>Select Resume PDF</h3>
-                <input type="file" id="fileInput" accept=".pdf" />
+                <input title="file" type="file" id="fileInput" accept=".pdf" />
                 <br>
                 <button onclick="uploadAndAnalyze()">Upload & Analyze</button>
             </div>

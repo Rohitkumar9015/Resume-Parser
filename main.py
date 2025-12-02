@@ -1,20 +1,15 @@
-"""
-Smart Resume Parser API
-FastAPI application with LangChain + Groq for AI-powered resume analysis
-"""
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from datetime import datetime
 import os
 import re
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 import json
 
@@ -23,7 +18,7 @@ load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Smart Resume Parser API",
+    title="Resume Parser",
     description="AI-powered resume analysis for Senior Python Developer positions",
     version="1.0.0"
 )
@@ -39,10 +34,10 @@ app.add_middleware(
 
 # Pydantic Models for Input/Output Validation
 class ResumeInput(BaseModel):
-    """Input model for resume text"""
-    resume_text: str = Field(..., min_length=50, description="Raw resume text to parse")
+    """input model for resume text"""
+    resume_text: str = Field(..., min_length=50, description="raw resume text to parse")
     
-    @validator('resume_text')
+    @field_validator('resume_text')
     def validate_resume_text(cls, v):
         if len(v.strip()) < 50:
             raise ValueError('Resume text must be at least 50 characters')
@@ -51,13 +46,13 @@ class ResumeInput(BaseModel):
 
 class ParsedResume(BaseModel):
     """Output model for parsed resume data"""
-    candidate_name: str = Field(..., description="Extracted candidate name")
-    tech_stack: List[str] = Field(..., description="List of technical skills/technologies")
-    years_of_experience: float = Field(..., ge=0, description="Total years of experience")
-    fit_score: float = Field(..., ge=0, le=10, description="Fit score from 0 to 10")
-    fit_explanation: str = Field(..., description="Explanation of the fit score")
-    matching_skills: List[str] = Field(..., description="Skills matching the job requirements")
-    missing_skills: List[str] = Field(default=[], description="Important skills not found in resume")
+    candidate_name: str = Field(..., description="Get candidate name")
+    tech_stack: List[str] = Field(..., description="List of technical skill and technologies")
+    years_of_experience: float = Field(..., ge=0, description="Total Experience")
+    fit_score: float = Field(..., ge=0, le=10, description="Get the score from 0 to 10")
+    fit_explanation: str = Field(..., description="Explanation of the score")
+    matching_skills: List[str] = Field(..., description="Skills matching the job requirement")
+    missing_skills: List[str] = Field(default=[], description="Important skills not found in resume to tell the candidate")
 
 
 # Job Requirements (Hardcoded for Senior Python Developer)
@@ -72,12 +67,12 @@ SENIOR_PYTHON_REQUIREMENTS = {
         "AWS", "Azure", "GCP", "Redis", "PostgreSQL",
         "MongoDB", "CI/CD", "Testing", "pytest"
     ],
-    "min_years": 5
+    "min_years": 1
 }
 
 
 def initialize_llm():
-    """Initialize Groq LLM with API key from environment"""
+    """initialize Groq LLM with API key from environment"""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY not found in environment variables")
