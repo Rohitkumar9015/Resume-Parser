@@ -16,7 +16,7 @@ import json
 # Load environment variables
 load_dotenv()
 
-# Initialize FastAPI app
+# FastAPI app
 app = FastAPI(
     title="Resume Parser",
     description="AI-powered resume analysis for Senior Python Developer positions",
@@ -32,7 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pydantic Models for Input/Output Validation
+# Pydantic Models for Input/Output Validation checks 
 class ResumeInput(BaseModel):
     """input model for resume text"""
     resume_text: str = Field(..., min_length=50, description="raw resume text to parse")
@@ -55,7 +55,7 @@ class ParsedResume(BaseModel):
     missing_skills: List[str] = Field(default=[], description="Important skills not found in resume to tell the candidate")
 
 
-# Job Requirements (Hardcoded for Senior Python Developer)
+# Job Requirements (Senior Python Developer)
 SENIOR_PYTHON_REQUIREMENTS = {
     "must_have_skills": [
         "Python", "FastAPI", "Flask", "Django", 
@@ -80,7 +80,7 @@ def initialize_llm():
     return ChatGroq(
         temperature=0,
         groq_api_key=api_key,
-        model_name="llama-3.3-70b-versatile"  # Fast and accurate model
+        model_name="llama-3.3-70b-versatile"  # Fast and accurate model working
     )
 
 
@@ -126,14 +126,14 @@ JSON Output:"""
     )
     
     try:
-        # Get response from LLM
+        # Get response from LLM by chain
         chain = prompt | llm
         response = chain.invoke({"resume_text": resume_text})
         
-        # Extract JSON from response
+        # Get JSON from response text
         content = response.content.strip()
         
-        # Remove markdown code blocks if present
+        # Delete markdown code blocks if present
         if content.startswith("json"):
             content = content.replace("json", "").replace("", "").strip()
         elif content.startswith(""):
@@ -198,11 +198,11 @@ def calculate_fit_score(tech_stack: List[str], years_exp: float) -> tuple:
     preferred = set(s.lower() for s in SENIOR_PYTHON_REQUIREMENTS["preferred_skills"])
     candidate_skills = set(s.lower() for s in tech_stack)
     
-    # Calculate skill matches
+    # Calculate skill matched or not
     must_have_matches = candidate_skills & must_have
     preferred_matches = candidate_skills & preferred
     
-    # Calculate score components
+    # Calculate score components 
     must_have_score = (len(must_have_matches) / len(must_have)) * 5  # 50% weight
     preferred_score = (len(preferred_matches) / len(preferred)) * 3  # 30% weight
     
@@ -265,7 +265,7 @@ async def parse_resume(resume: ResumeInput):
     Returns structured JSON with candidate info, experience, and fit score
     """
     try:
-        # Initialize LLM
+        # Initialize LLM 
         llm = initialize_llm()
         
         # Extract data using LLM
