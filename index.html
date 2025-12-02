@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            border: 2px dashed #ddd;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            background: #fafafa;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error {
+            display: none;
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .result-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .skill {
+            background: #2196F3;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .skill.missing {
+            background: #f44336;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Parser</h1>
+        <p class="subtitle">Upload a PDF resume to analyze</p>
+
+        <div id="uploadSection">
+            <div class="upload-section">
+                <h3>Select Resume PDF</h3>
+                <input type="file" id="fileInput" accept=".pdf" />
+                <br>
+                <button onclick="uploadAndAnalyze()">Upload & Analyze</button>
+            </div>
+
+            <div class="error" id="error"></div>
+            
+            <div class="loading" id="loading">
+                <p>Processing resume... Please wait...</p>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2 id="candidateName"></h2>
+            
+            <div class="result-item">
+                <h3>Fit Score</h3>
+                <div class="score" id="score"></div>
+                <p id="scoreExplanation"></p>
+            </div>
+
+            <div class="result-item">
+                <h3>Experience</h3>
+                <p id="experience"></p>
+            </div>
+
+            <div class="result-item">
+                <h3>Matching Skills</h3>
+                <div class="skills" id="matchingSkills"></div>
+            </div>
+
+            <div class="result-item">
+                <h3>Missing Skills</h3>
+                <div class="skills" id="missingSkills"></div>
+            </div>
+
+            <div class="result-item">
+                <h3>Tech Stack</h3>
+                <div class="skills" id="techStack"></div>
+            </div>
+
+            <button onclick="reset()">Analyze Another Resume</button>
+        </div>
+    </div>
+
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        async function extractTextFromPDF(file) {
+            try {
+                console.log('Starting PDF extraction...');
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                console.log('PDF loaded, pages:', pdf.numPages);
+                
+                let fullText = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+
+                console.log('Extracted text length:', fullText.length);
+                return fullText.trim();
+            } catch (error) {
+                console.error('PDF extraction error:', error);
+                throw new Error('Failed to extract text from PDF: ' + error.message);
+            }
+        }
+
+        async function uploadAndAnalyze() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError('Please select a PDF file');
+                return;
+            }
+
+            if (file.type !== 'application/pdf') {
+                showError('Please upload a PDF file');
+                return;
+            }
+
+            console.log('File selected:', file.name, file.size, 'bytes');
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('error').classList.remove('show');
+
+            try {
+                // Extract text from PDF
+                const resumeText = await extractTextFromPDF(file);
+                console.log('Resume text extracted, sending to API...');
+
+                if (resumeText.length < 50) {
+                    throw new Error('Resume text is too short (less than 50 characters). Please upload a valid resume.');
+                }
+
+                // Call API
+                const response = await fetch('http://localhost:8000/api/parse-resume', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        resume_text: resumeText
+                    })
+                });
+
+                console.log('API response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to analyze resume');
+                }
+
+                const data = await response.json();
+                console.log('Analysis complete:', data);
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('uploadSection').classList.add('hidden');
+            document.getElementById('results').classList.add('show');
+
+            document.getElementById('candidateName').textContent = data.candidate_name;
+            document.getElementById('score').textContent = data.fit_score + '/10';
+            document.getElementById('scoreExplanation').textContent = data.fit_explanation;
+            document.getElementById('experience').textContent = data.years_of_experience + ' years';
+
+            // Matching skills
+            const matchingSkillsDiv = document.getElementById('matchingSkills');
+            matchingSkillsDiv.innerHTML = '';
+            data.matching_skills.forEach(skill => {
+                const span = document.createElement('span');
+                span.className = 'skill';
+                span.textContent = skill;
+                matchingSkillsDiv.appendChild(span);
+            });
+
+            // Missing skills
+            const missingSkillsDiv = document.getElementById('missingSkills');
+            missingSkillsDiv.innerHTML = '';
+            if (data.missing_skills.length === 0) {
+                missingSkillsDiv.innerHTML = '<p>No critical skills missing!</p>';
+            } else {
+                data.missing_skills.forEach(skill => {
+                    const span = document.createElement('span');
+                    span.className = 'skill missing';
+                    span.textContent = skill;
+                    missingSkillsDiv.appendChild(span);
+                });
+            }
+
+            // Tech stack
+            const techStackDiv = document.getElementById('techStack');
+            techStackDiv.innerHTML = '';
+            data.tech_stack.forEach(tech => {
+                const span = document.createElement('span');
+                span.className = 'skill';
+                span.textContent = tech;
+                techStackDiv.appendChild(span);
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = 'Error: ' + message;
+            errorDiv.classList.add('show');
+        }
+
+        function reset() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadSection').classList.remove('hidden');
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('error').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
